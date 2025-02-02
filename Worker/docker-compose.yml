@@ -1,0 +1,38 @@
+version: "3.9"
+services:
+  rabbitmq:
+    image: rabbitmq:4.0.5-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - rabbitmq_net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  worker:
+    image: rabbitmq-worker:latest 
+    deploy:
+      mode: replicated
+      replicas: 1
+    build: . 
+    environment:
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__QueueName=task_queue
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
+      - WebSocket__Port=5000
+    ports:
+      - "5000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - rabbitmq_net
+    
+networks:
+  rabbitmq_net:
+    driver: bridge

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>發送 RabbitMQ 訊息</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        /* 頁面背景及字體設置 */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 標題樣式 */
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 50px;
+        }
+
+        /* 表單容器 */
+        form {
+            background-color: #ffffff;
+            padding: 20px;
+            margin: 30px auto;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        /* 表單標籤及輸入框 */
+        label {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* 按鈕樣式 */
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+            button:hover {
+                background-color: #45a049;
+            }
+
+        /* 結果訊息區域 */
+        #result {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+            color: #d9534f;
+        }
+    </style>
+</head>
+<body>
+    <h1>發送訊息給 RabbitMQ</h1>
+    <form id="messageForm">
+        <label for="loopCount">迴圈次數:</label>
+        <input type="number" id="loopCount" name="loopCount" required><br><br>
+
+        <label for="routingKey">Routing Key:</label>
+        <input type="text" id="routingKey" name="routingKey" required placeholder="task_queue" value="task_queue"><br><br>
+
+        <button type="submit">發送訊息</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        // 當表單提交時，發送 POST 請求到 API
+        document.getElementById("messageForm").addEventListener("submit", function (event) {
+            event.preventDefault();  // 阻止表單默認行為
+
+            const loopCount = document.getElementById("loopCount").value;
+            const routingKey = document.getElementById("routingKey").value;
+
+            // 構建請求的內容
+            const requestData = {
+                loopCount: loopCount,
+                routingKey: routingKey
+            };
+
+            // 發送 POST 請求
+            fetch("/api/v1/task/SendMessage", {  // 確保路徑為 /api/v1/task/SendMessage
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestData)
+            })
+                .then(response => response.json())  // 解析 JSON 回應
+                .then(data => {
+                    document.getElementById("result").innerText = data.message;  // 顯示回應訊息
+                })
+                .catch(error => {
+                    document.getElementById("result").innerText = "發送失敗，請稍後再試！";  // 顯示錯誤訊息
+                });
+        });
+    </script>
+</body>
+</html>

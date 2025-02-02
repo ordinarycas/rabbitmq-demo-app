@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket & RabbitMQ</title>
+    <!--
+        <link href="./css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            color: #444;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #status {
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #messages {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            word-wrap: break-word;
+        }
+
+        #totalMessages {
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        #websocketInfo {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        button {
+            margin: 10px 5px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-connect {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-disconnect {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-clear {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+    <script>
+        let socket;
+        let messageCount = 0;
+        /* docker use "worker" , localhost */
+        let websocketUrl = "ws://localhost:5000/ws";
+        let isConnected = false;
+        let clientId = "";  // 用來存儲自己的連線 ID
+        let connectedClients = []; // 用來存儲所有連線的 ID
+
+        // 格式化日期時間為 yyyy/MM/dd hh:mm:ss.ffff
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const seconds = date.getSeconds().toString().padStart(2, '0');
+            const milliseconds = date.getMilliseconds().toString().padStart(3, '0');
+            return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
+        }
+
+        // 初始化 WebSocket 連線
+        function initWebSocket() {
+            const port = document.getElementById("portInput").value || 5000;  // 預設端口為 5000
+            websocketUrl = `ws://localhost:${port}/ws`;
+            socket = new WebSocket(websocketUrl);
+
+            socket.onopen = function () {
+                isConnected = true;
+                document.getElementById("status").innerText = "WebSocket 已連線";
+                document.getElementById("connectBtn").disabled = true;
+                document.getElementById("disconnectBtn").disabled = false;
+
+                // 請求連線資訊
+                socket.send(JSON.stringify({ type: 'connectionInfo' }));
+            };
+
+            socket.onmessage = function (event) {
+                const message = event.data;
+                console.log(message);
+                try {
+                    const data = JSON.parse(message);
+
+                    if (data.type === 'connectionInfo') {
+                        // 更新自己的連線 ID 和所有連線資訊
+                        clientId = data.connectionId;
+                        connectedClients = data.connectionIds;
+
+                        document.getElementById("clientId").innerText = `您的連線 ID: ${clientId}`;
+                        document.getElementById("connectedClients").innerText = `當前連線數: ${data.connectionCount}`;
+                        document.getElementById("allClientIds").innerText = `所有連線的 ID: ${connectedClients.join(", ")}`;
+                    }
+
+                    if (data.type === 'currentConnections') {
+                        // 更新所有連線資訊
+                        connectedClients = data.connectionIds;
+
+                        document.getElementById("connectedClients").innerText = `當前連線數: ${data.connectionCount}`;
+                        document.getElementById("allClientIds").innerText = `所有連線的 ID: ${connectedClients.join(", ")}`;
+                    }
+
+                    // 顯示伺服器傳來的普通訊息
+                    if (data.type === 'message') {
+                        messageCount++;
+                        const time = formatDate(new Date());
+                        const messageElement = document.createElement("div");
+                        messageElement.innerText = `[${time}] ${data.content}`;
+                        document.getElementById("messages").appendChild(messageElement);
+
+                        document.getElementById("totalMessages").innerText = `Total Messages Received: ${messageCount}`;
+                        const messagesContainer = document.getElementById("messages");
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    }
+                } catch (e) {
+                    console.error("無法解析伺服器訊息: ", e);
+                    console.log("收到的原始訊息: ", message);
+                }
+            };
+
+            socket.onclose = function () {
+                isConnected = false;
+                document.getElementById("status").innerText = "WebSocket 未連線";
+                document.getElementById("connectBtn").disabled = false;
+                document.getElementById("disconnectBtn").disabled = true;
+            };
+        }
+
+        // 關閉 WebSocket 連線
+        function disconnectWebSocket() {
+            if (socket) {
+                socket.close();
+            }
+        }
+
+        // 清除訊息
+        function clearMessages() {
+            messageCount = 0;
+            document.getElementById("messages").innerHTML = "";
+            document.getElementById("totalMessages").innerText = `Total Messages Received: 0`;
+        }
+
+        // 預設填入目前網址的端口
+        window.onload = function () {
+            const currentPort = window.location.port || 5000; // 如果網址沒有端口則使用預設值 5000
+            document.getElementById("portInput").value = currentPort;
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>WebSocket 與 RabbitMQ 範例</h1>
+        <div id="status">WebSocket 未連線</div>
+        <div>
+            <label for="portInput">WebSocket 端口: </label>
+            <input type="text" id="portInput" />
+            <button id="connectBtn" class="btn-connect" onclick="initWebSocket()">開始連線</button>
+            <button id="disconnectBtn" class="btn-disconnect" onclick="disconnectWebSocket()" disabled>中斷連線</button>
+            <button class="btn-clear" onclick="clearMessages()">清除訊息</button>
+        </div>
+
+        <div id="clientId" style="margin-top: 20px; font-size: 14px;"></div>  <!-- 显示客户端 ID -->
+        <div id="websocketInfo">
+            <div id="connectedClients">當前連線數: 0</div>
+            <div id="allClientIds">所有連線的 ID: </div>
+        </div>
+
+        <div id="messages"></div>
+        <div id="totalMessages">Total Messages Received: 0</div>
+    </div>
+    <!--
+        <script src="./js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    -->
+</body>
+</html>
