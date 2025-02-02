@@ -1,99 +1,111 @@
-# RabbitMQ ¥\¯àºt¥Ü
+# RabbitMQ åŠŸèƒ½æ¼”ç¤º
 
-°£¤F©x¤è°òÂ¦ªº RabbitMQ ±Ğ¾Ç¡A¹ê§@¤F Worker ¼Ò¦¡¨Ï¥Î WebSocket ºÊ¬İ Worker ±µ¦¬ªº®ø®§¡C
+é™¤äº†å®˜æ–¹åŸºç¤çš„ RabbitMQ æ•™å­¸ï¼Œå¯¦ä½œäº† Worker æ¨¡å¼ä½¿ç”¨ WebSocket ç›£çœ‹ Worker æ¥æ”¶çš„æ¶ˆæ¯ã€‚
 
-## ¬yµ{¹Ï
+## æµç¨‹åœ–
 
-### ¹Ï 1¡G½Ğ¨D¬yµ{
+### åœ– 1ï¼šè«‹æ±‚æµç¨‹
 
 ```mermaid
 graph TD;
-    A(¶}©l) --> B(²Ä¤T¤è½Ğ¨D)
-    B --> C(±µ¦¬½Ğ¨D Task)
+    A(é–‹å§‹) --> B(ç¬¬ä¸‰æ–¹è«‹æ±‚)
+    B --> C(æ¥æ”¶è«‹æ±‚ Task)
     C --> D(RabbitMQ)
-    D --> E(±µ¦¬ Queue «áªº½Ğ¨D Worker)
-    E --> F(²Ä¤T¤èÀ³¥Î)
-    F --> G(µ²§ô)
+    D --> E(æ¥æ”¶ Queue å¾Œçš„è«‹æ±‚ Worker)
+    E --> F(ç¬¬ä¸‰æ–¹æ‡‰ç”¨)
+    F --> G(çµæŸ)
 ```
 
-### ¹Ï 2¡G¨t²Î¬[ºc
+### åœ– 2ï¼šç³»çµ±æ¶æ§‹
 
 ```mermaid
 graph LR;
-    subgraph «È¤áºİ
-        A1(¨Ï¥ÎªÌ) -->|½Ğ¨D API| A2(Web ªA°È)
+    subgraph å®¢æˆ¶ç«¯
+        A1(ä½¿ç”¨è€…) -->|è«‹æ±‚ API| A2(Web æœå‹™)
     end
-    subgraph ¦øªA¾¹
-        A2 -->|µo°e°T®§| B1(RabbitMQ)
-        B1 -->|±µ¦¬¨Ã³B²z| B2(Worker)
-        B2 -->|µo°eµ²ªG| C1(WebSocket)
+    subgraph ä¼ºæœå™¨
+        A2 -->|ç™¼é€è¨Šæ¯| B1(RabbitMQ)
+        B1 -->|æ¥æ”¶ä¸¦è™•ç†| B2(Worker)
+        B2 -->|ç™¼é€çµæœ| C1(WebSocket)
     end
-    subgraph WebSocket ¥Î¤á
-        C1 --> D1(«È¤áºİÀ³¥Î)
+    subgraph WebSocket ç”¨æˆ¶
+        C1 --> D1(å®¢æˆ¶ç«¯æ‡‰ç”¨)
     end
 
 ```
 
-### ¹Ï 3¡Gµ{¦¡¬[ºc
+### åœ– 3ï¼šç¨‹å¼æ¶æ§‹
 
 ```mermaid
 graph TD;
     A(Program.cs) --> B(WebSocketController.cs)
     A --> C(MessageService.cs)
-    C --> D(RabbitMQ ³s±µ)
-    B --> E(ºŞ²z WebSocket ³s½u)
-    C --> F(³B²z MQ °T®§)
-    E --> G(WebSocket ¼s¼½)
+    C --> D(RabbitMQ é€£æ¥)
+    B --> E(ç®¡ç† WebSocket é€£ç·š)
+    C --> F(è™•ç† MQ è¨Šæ¯)
+    E --> G(WebSocket å»£æ’­)
 ```
 
-### ¹Ï 4¡GÀ³¥Îµ{¦¡¬[ºc
+### åœ– 4ï¼šæ‡‰ç”¨ç¨‹å¼æ¶æ§‹
 
 ```mermaid
 graph TD;
-    A(«eºİÀ³¥Î) -->|µo°e WebSocket ½Ğ¨D| B(«áºİ WebSocket ªA°È)
-    A -->|µo°e HTTP ½Ğ¨D| C(«áºİ API)
-    C -->|µo°e¦Ü RabbitMQ| D(MessageQueue)
-    D -->|³B²z°T®§| E(Worker)
-    E -->|µo°eµ²ªG| B
-    B -->|§ó·s UI| A
+    A(å‰ç«¯æ‡‰ç”¨) -->|ç™¼é€ WebSocket è«‹æ±‚| B(å¾Œç«¯ WebSocket æœå‹™)
+    A -->|ç™¼é€ HTTP è«‹æ±‚| C(å¾Œç«¯ API)
+    C -->|ç™¼é€è‡³ RabbitMQ| D(MessageQueue)
+    D -->|è™•ç†è¨Šæ¯| E(Worker)
+    E -->|ç™¼é€çµæœ| B
+    B -->|æ›´æ–° UI| A
 ```
 
-## ¶}©l¨Ï¥Î(Getting Started)
+## é–‹å§‹ä½¿ç”¨(Getting Started)
 
-°õ¦æ Worker docker-compose ¥]§t RabbitMQ
+åŸ·è¡Œ Worker docker-compose åŒ…å« RabbitMQ
 
 ```bash
 docker-compose up -d --scale worker=1
 ```
 
-°õ¦æ§¹«á¥ıÃö±¼ Worker container
+åŸ·è¡Œå®Œå¾Œå…ˆé—œæ‰ Worker container
+![Worker container](https://github.com/ordinarycas/rabbitmq-demo-app/blob/main/Demo/docker-container-woker.png)
 
-ºô§}¿é¤J http://localhost:15672 µn¤JRabbitMQ
+ç¶²å€è¼¸å…¥ http://localhost:15672 ç™»å…¥RabbitMQ
+![ç™»å…¥RabbitMQ](https://github.com/ordinarycas/rabbitmq-demo-app/blob/main/Demo/RabbitMQ-queues.png)
 
-¦A°õ¦æ Task ºô§}¿é¤J http://localhost:5000 ¥i¥H¥ıµo°e10­Ó½Ğ¨D
+å†åŸ·è¡Œ Task ç¶²å€è¼¸å…¥ http://localhost:5000 å¯ä»¥å…ˆç™¼é€10å€‹è«‹æ±‚
+![Task](https://github.com/ordinarycas/rabbitmq-demo-app/blob/main/Demo/task.jpeg)
 
-RabbitMQ ªº Messages 10 ´N¦³10µ§¥¿¦b Ready
+RabbitMQ çš„ Messages 10 å°±æœ‰10ç­†æ­£åœ¨ Ready
+![RabbitMQ Ready](https://github.com/ordinarycas/rabbitmq-demo-app/blob/main/Demo/RabbitMQ-queues-ready.png)
 
-¥i¥H¦A±Ò°Ê Worker container ´N·|§â10µ§®ø¤Æ¤F
+å¯ä»¥å†å•Ÿå‹• Worker container å°±æœƒæŠŠ10ç­†æ¶ˆåŒ–äº†
+![Worker container](https://github.com/ordinarycas/rabbitmq-demo-app/blob/main/Demo/docker-container-woker-1.png)
 
-¸Õ¸Õ¦h¤@ÂI worker ¥i¥H¤U
+è©¦è©¦å¤šä¸€é» worker å¯ä»¥ä¸‹
 ```bash
 docker-compose up -d --scale worker=5
 ```
 
-Åı Task ¦¸¼Æ¦h¤@¨Ç¡A¦p¡G10000¦¸
-
-¥i¥H¬İ¨ì worker ¥­§¡¤À´²±¼¤F½Ğ¨D
+![Worker container](https://github.com/ordinarycas/rabbitmq-demo-app/blob/main/Demo/docker-container-woker-all.png)
 
 
-### Àô¹Ò»İ¨D(Prerequisites)
+è®“ Task æ¬¡æ•¸å¤šä¸€äº›ï¼Œå¦‚ï¼š10000æ¬¡
+
+![Task](https://github.com/ordinarycas/rabbitmq-demo-app/blob/main/Demo/task-100000.png)
+
+
+å¯ä»¥çœ‹åˆ° worker å¹³å‡åˆ†æ•£æ‰äº†è«‹æ±‚
+![Worker container](https://github.com/ordinarycas/rabbitmq-demo-app/blob/main/Demo/docker-container-woker-1-and-woker-2.png)
+
+
+### ç’°å¢ƒéœ€æ±‚(Prerequisites)
 - Visual Studio 2022 or later
 - Basic knowledge of C#
 - .NET 8
 - Docker
 
-## °^Äm(Contributing)
+## è²¢ç»(Contributing)
 
 Contributions are welcome! Please fork the repository and create a pull request with your changes.
 
-Åwªï°^Äm¡I½Ğ fork ³o­Ó­Ü®w¨Ã³Ğ«Ø pull request ´£¥æ§Aªº§ó§ï¡C
+æ­¡è¿è²¢ç»ï¼è«‹ fork é€™å€‹å€‰åº«ä¸¦å‰µå»º pull request æäº¤ä½ çš„æ›´æ”¹ã€‚
